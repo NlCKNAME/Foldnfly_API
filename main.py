@@ -91,6 +91,16 @@ print (response.status_code)
 response.encoding = 'utf-8' # Optional: requests infers this internally
 soup = BeautifulSoup(response.text, 'lxml')
 header = soup.find_all('div', id='hero')
+steps = soup.find_all('div', id=re.compile("^s"))
+
+
+
+picture = header[0].find_all('picture')[0].find_all('img')[0].attrs['src']
+
+title = header[0].find_all('h1')[0].text
+descs_title = header[0].find_all('h2')[0].text
+descs_long = header[0].find_all('p')[0].text
+
 desc = header[0].find_all('div', class_='description')
 
 specs_ = {
@@ -101,5 +111,20 @@ specs_ = {
     'time' : desc[0].find_all('i', class_='icon-clock')[0].parent.text
 }
 
-
+print(picture)
+print(title)
+print(descs_title)
+print(descs_long)
 print(specs_)
+
+for step in steps :
+    print(step.find_all('p')[0].text)
+    print(step.find_all('img')[0].attrs['src'])
+
+result = soup.find_all('div', id='result')[0]
+print(result.find_all('picture')[0].find_all('img')[0].attrs['src'])
+print(result.find_all('b')[0].text)
+print(result.find_all('p')[0].text)
+
+vid = soup.find_all('div', id='video')[0]
+print(vid.find_all('iframe', id='youtube')[0].attrs['data-src'])
