@@ -102,19 +102,45 @@ def get_plane(number):
     response.encoding = 'utf-8' # Optional: requests infers this internally
     soup = BeautifulSoup(response.text, 'lxml')
     header = soup.find_all('div', id='hero')
+    steps = soup.find_all('div', id=re.compile("^s"))
     desc = header[0].find_all('div', class_='description')
 
-    specs_ = {
-        'diff_' : desc[0].find_all('i', class_='icon-star')[0].parent.text,
-        'nb_fold' : desc[0].find_all('i', class_='icon-fold')[0].parent.text,
-        'tag' : desc[0].find_all('i', class_='icon-tag')[0].parent.text,
-        #'dist' : desc[0].find_all('i', class_='icon-distance')[0].parent.text,
-        #'time' : desc[0].find_all('i', class_='icon-clock')[0].parent.text
+    instruction = []
+
+    for step in steps :
+        Steps = {
+            'step': step.find_all('p')[0].text,
+            'img': step.find_all('img')[0].attrs['src']
+        }
+        instruction.append(Steps)
+
+    #Include the final result in the steps or leave it as is?
+    instruction.append({
+            'img': soup.find_all('div', id='result')[0].find_all('picture')[0].find_all('img')[0].attrs['src'],
+            'title': soup.find_all('div', id='result')[0].find_all('b')[0].text,
+            'notes': soup.find_all('div', id='result')[0].find_all('p')[0].text   
+    })
+
+    data = {
+        'header': {
+            'img_': header[0].find_all('picture')[0].find_all('img')[0].attrs['src'],
+            'title': header[0].find_all('h1')[0].text,
+            'subtitle': header[0].find_all('h2')[0].text,
+            'desc': header[0].find_all('p')[0].text,
+            'specs_': {
+                'diff_' : desc[0].find_all('i', class_='icon-star')[0].parent.text,
+                'nb_fold' : desc[0].find_all('i', class_='icon-fold')[0].parent.text,
+                'tag' : desc[0].find_all('i', class_='icon-tag')[0].parent.text,
+                #'dist' : desc[0].find_all('i', class_='icon-distance')[0].parent.text, #Problem if don't exist on selected model
+                #'time' : desc[0].find_all('i', class_='icon-clock')[0].parent.text #Problem if don't exist on selected model
+            }
+        },
+        'instruction': instruction,
+        'video':  soup.find_all('div', id='video')[0].find_all('iframe', id='youtube')[0].attrs['data-src']
     }
 
-
-    print(specs_)
-    return jsonify(specs_)
+    print(data)
+    return jsonify(data)
 
 if __name__ == '__main__':
     app.run() 
